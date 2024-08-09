@@ -1,4 +1,5 @@
 .coverage
 __pycache__
 database/
+htmlcov/
 py3env/
