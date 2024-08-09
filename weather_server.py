@@ -138,3 +138,22 @@ def get_progress(uid: int) -> Response:
         return {'error': 'Internal Error'}, 500
 
     return {'progress': progress}, 200
+
+@app.route('/result/<int:uid>')
+def get_weather_data(uid: int) -> Response:
+    """Returns the weather data collected for a previous request"""
+
+    # get document
+    doc = server.db_col.find_one({'uid': uid})
+
+    # if not found, return 404
+    if not doc:
+        return {'error': f'No record with id {uid} found in database.'}, 404
+
+    # if found, return % of progress
+    if not doc['cities']:
+        # handle corrupted document in database, return internal error
+        logging.exception(f'Missing expected field \'cities\' in document.')
+        return {'error': 'Internal Error'}, 500
+
+    return {'cities': doc['cities']}, 200

@@ -41,7 +41,6 @@ async def test_get_progress_internal_error():
     response = await client.get('/progress/707')
     assert response.status_code == 500
 
-
 @pytest.mark.asyncio
 async def test_get_progress_success(httpx_mock):
     """Test getting the progress of a previous request"""
@@ -68,6 +67,31 @@ async def test_get_progress_success(httpx_mock):
     json_data = json.loads(await response.data)
     assert json_data['progress'] == approx(100)
 
+@pytest.mark.asyncio
+async def test_get_weather_result(httpx_mock):
+    """Test getting the progress of a previous request"""
+    server.db_col = mongomock.MongoClient().db.collection
+    server.cities_ids = ['111', '234']
+    httpx_mock.add_response(
+        json={
+            'id': 111,
+            'main': {
+                'temp': 90,
+                'humidity': 50}})
+    httpx_mock.add_response(
+        json={
+            'id': 234,
+            'main': {
+                'temp': 5.4,
+                'humidity': 72.1}})
+
+    response = await client.post('/collect/222')
+    assert response.status_code == 202
+
+    response = await client.get('/result/222')
+    assert response.status_code == 200
+    json_data = json.loads(await response.data)
+    assert len(json_data['cities']) == 2
 
 @pytest.mark.asyncio
 async def test_collect_duplicated_id():
