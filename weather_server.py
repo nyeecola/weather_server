@@ -127,6 +127,7 @@ def get_progress(uid: int) -> Response:
 
     # if not found, return 404
     if not doc:
+        logging.exception(f'No record with id {uid} found in database.')
         return {'error': f'No record with id {uid} found in database.'}, 404
 
     # if found, return % of progress
@@ -148,6 +149,7 @@ def get_weather_data(uid: int) -> Response:
 
     # if not found, return 404
     if not doc:
+        logging.exception(f'No record with id {uid} found in database.')
         return {'error': f'No record with id {uid} found in database.'}, 404
 
     # if found, return % of progress
