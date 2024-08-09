@@ -35,7 +35,7 @@ class WeatherServer:
         self.event_loop = asyncio.new_event_loop()
 
         # HTTPX config
-        self.httpx_client = httpx.AsyncClient()
+        self.httpx_client = httpx.AsyncClient(timeout=None)
 
         # list of cities to collect data from
         self.cities_ids = cities_ids
