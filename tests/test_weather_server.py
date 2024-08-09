@@ -2,10 +2,15 @@ import json
 import mongomock
 import pytest
 
+import httpx
+import pymongo
 from pytest import approx
 from weather_server import app
 from weather_server import kelvin_to_celsius
 from weather_server import server
+from weather_server import WeatherServer
+
+from cities import cities_ids
 
 # Pytest setup
 pytest_plugins = ('pytest_asyncio',)
@@ -94,13 +99,19 @@ async def test_get_weather_result(httpx_mock):
     assert len(json_data['cities']) == 2
 
 @pytest.mark.asyncio
+async def test_get_weather_result_not_found():
+    """Test failing to get weather result from an inexistent request id"""
+    server.db_col = mongomock.MongoClient().db.collection
+    response = await client.get('/result/555')
+    assert response.status_code == 404
+
+@pytest.mark.asyncio
 async def test_collect_duplicated_id():
     """Test failing to collect data from a duplicated request id"""
     server.db_col = mongomock.MongoClient().db.collection
     server.db_col.insert_one({'uid': 101})
     response = await client.post('/collect/101')
     assert response.status_code == 409
-
 
 @pytest.mark.asyncio
 async def test_collect_db_insert(httpx_mock):
@@ -116,3 +127,11 @@ async def test_collect_db_insert(httpx_mock):
     response = await client.post('/collect/133')
     assert response.status_code == 202
     assert server.db_col.find_one({'uid': 133})
+
+def test_server_initialization():
+    """Test if the WeatherServer is initialized correctly"""
+    ws = WeatherServer()
+
+    assert isinstance(ws.db_col, pymongo.collection.Collection)
+    assert isinstance(ws.httpx_client, httpx.AsyncClient)
+    assert ws.cities_ids == cities_ids
